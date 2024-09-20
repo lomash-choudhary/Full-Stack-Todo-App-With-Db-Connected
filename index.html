@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Todo App Full Stack</title>
+    <script src = "https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.7/axios.min.js"></script>
+  </head>
+  <body>
+
+    <div id = "signUpDiv">
+      <h4>SignUp</h4>
+      <input id = "emailSignUpId" type = "text" placeholder = "Enter the email of the user">
+      <input id = "nameSignUpId" type = "text" placeholder = "Enter the name of the user">
+      <input id = "usernameSignUpId" type = "text" placeholder = "Enter the username">
+      <input id = "passwordSignUpId" type = "text" placeholder = "Enter the password">
+      <button onclick = "signup()">
+        Submit
+      </button>
+    </div>
+    
+    <div id = "signInDiv"></div>
+    
+    <div>
+      <button id = "showMyTodosButton" onclick = "showMyTodos()">
+        Show my todos
+      </button>
+    </div>
+
+    <div id = "allTodosDiv"></div>
+
+    <div id = "addTodoDiv"></div>
+
+    <div id = "updateTodoDiv"></div>
+
+    <div id = "deleteTodoDiv"></div>
+
+    <script>
+      async function signup(){
+
+        const emailOfTheUserDuringSignUp = document.getElementById("emailSignUpId").value;
+        const nameOfTheUserDuringSignUp = document.getElementById("nameSignUpId").value;
+        const usernameOfTheUserDuringSignUp = document.getElementById("usernameSignUpId").value;
+        const passwordOfTheUserDuringSignUp = document.getElementById("passwordSignUpId").value;
+
+        const response = await axios.post("http://localhost:3000/signup", {
+          email: emailOfTheUserDuringSignUp,
+          name: nameOfTheUserDuringSignUp,
+          username: usernameOfTheUserDuringSignUp,
+          password: passwordOfTheUserDuringSignUp
+        })
+        if(response.data.error){
+          alert(JSON.stringify(response.data.error));
+        }
+        else{
+          alert(JSON.stringify(response.data.message));
+        } 
+        const newHeadingForSignIn = document.createElement("h4");
+        const emailInputBoxForSignIn = document.createElement("input")
+        const nameInputBoxForSignIn = document.createElement("input")
+        const usernameInputBoxForSignIn = document.createElement("input")
+        const passwordInputBoxForSignIn = document.createElement("input")
+        const buttonForSignIn = document.createElement("button");
+        const newSignInDiv = document.createElement("div");
+        newHeadingForSignIn.innerHTML = "SignIn";
+        buttonForSignIn.innerHTML = "Submit";
+        buttonForSignIn.setAttribute("onclick", "signin()");
+        emailInputBoxForSignIn.setAttribute("id", "emailSignInId");
+        emailInputBoxForSignIn.setAttribute("type", "text");
+        emailInputBoxForSignIn.setAttribute("placeholder", "Enter the email of the user");
+        nameInputBoxForSignIn.setAttribute("id", "nameSignInId");
+        nameInputBoxForSignIn.setAttribute("type", "text");
+        nameInputBoxForSignIn.setAttribute("placeholder", "Enter the name of the user");
+        usernameInputBoxForSignIn.setAttribute("id", "usernameSignInId");
+        usernameInputBoxForSignIn.setAttribute("type", "text");
+        usernameInputBoxForSignIn.setAttribute("placeholder", "Enter the username");
+        passwordInputBoxForSignIn.setAttribute("id", "passwordSignInId");
+        passwordInputBoxForSignIn.setAttribute("type", "text");
+        passwordInputBoxForSignIn.setAttribute("placeholder", "Enter the password");
+        newSignInDiv.appendChild(newHeadingForSignIn);
+        newSignInDiv.appendChild(emailInputBoxForSignIn);
+        newSignInDiv.appendChild(nameInputBoxForSignIn);
+        newSignInDiv.appendChild(usernameInputBoxForSignIn);
+        newSignInDiv.appendChild(passwordInputBoxForSignIn);        
+        newSignInDiv.appendChild(buttonForSignIn);
+        document.getElementById("signInDiv").appendChild(newSignInDiv);
+        document.getElementById("signUpDiv").innerHTML = "";
+      }
+
+      async function signin() {
+        const emailOfTheUserDuringSignIn = document.getElementById("emailSignInId").value;
+        const nameOfTheUserDuringSignIn = document.getElementById("nameSignInId").value;
+        const usernameOfTheUserDuringSignIn = document.getElementById("usernameSignInId").value;
+        const passwordOfTheUserDuringSignIn = document.getElementById("passwordSignInId").value;
+
+        const response = await axios.post("http://localhost:3000/signin", {
+          email: emailOfTheUserDuringSignIn,
+          name: nameOfTheUserDuringSignIn,
+          username: usernameOfTheUserDuringSignIn,
+          password: passwordOfTheUserDuringSignIn
+        })
+        alert("user signedin on the app");
+        localStorage.setItem("token", response.data.token);
+        document.getElementById("signInDiv").innerHTML = "";
+      }
+
+      async function showMyTodos(){
+        document.getElementById("signUpDiv").innerHTML = "";
+        document.getElementById("signInDiv").innerHTML = "";  
+        document.getElementById("addTodoDiv").innerHTML = "";
+        document.getElementById("updateTodoDiv").innerHTML = "";
+        document.getElementById("deleteTodoDiv").innerHTML = "";
+        document.getElementById("allTodosDiv").innerHTML = "";
+        const token = localStorage.getItem("token");
+        const response = await axios.get("http://localhost:3000/showMyTodos", {
+          headers: {
+            token: token
+          }
+        })
+        if(response.data.error){
+          alert(JSON.stringify(response.data.error))
+        }
+        for(let i = 0; i < response.data.todos.length; i++){
+          const todoIdHeading = document.createElement("h4");
+          const todoDescriptionHeading = document.createElement("h4");
+          const todoStatusHeading = document.createElement("h4");
+          const newDiv = document.createElement("div");
+          todoIdHeading.innerHTML = `Todo Id: ${response.data.todos[i]._id}`;
+          todoDescriptionHeading.innerHTML = `Todo Description: ${response.data.todos[i].description}`;
+          todoStatusHeading.innerHTML = `Todo Status: ${response.data.todos[i].status}`;
+          newDiv.appendChild(todoIdHeading);
+          newDiv.appendChild(todoDescriptionHeading);
+          newDiv.appendChild(todoStatusHeading); 
+          document.getElementById("allTodosDiv").appendChild(newDiv);
+        }
+        //add todo div
+        const newAddTodoDiv = document.createElement("div");
+        const newAddTodoButton = document.createElement("button");
+        newAddTodoButton.setAttribute("onclick", "addTodoButton()");
+        newAddTodoButton.innerHTML = "Add todo";
+        const newInputTodoDescriptionTextBox = document.createElement("input");
+        newInputTodoDescriptionTextBox.setAttribute("id", "addTodoTextInputBox");
+        newInputTodoDescriptionTextBox.setAttribute("type", "text");
+        newInputTodoDescriptionTextBox.setAttribute("placeholder", "Enter the todo to be added")
+        const newInputTodoStatusTextBox = document.createElement("input");
+        newInputTodoStatusTextBox.setAttribute("id", "addTodoStatusInputBox");
+        newInputTodoStatusTextBox.setAttribute("type", "text");
+        newInputTodoStatusTextBox.setAttribute("placeholder", "Enter the status of the todo to be added")
+        newAddTodoDiv.appendChild(newInputTodoDescriptionTextBox);
+        newAddTodoDiv.appendChild(newInputTodoStatusTextBox);
+        newAddTodoDiv.appendChild(newAddTodoButton);
+        document.getElementById("addTodoDiv").appendChild(newAddTodoDiv);
+
+        //update todo div
+        const newUpdateTodoDiv = document.createElement("div");
+        const UpdateTodoButton = document.createElement("button");
+        UpdateTodoButton.setAttribute("onclick", "updateTodo()"); 
+        UpdateTodoButton.innerHTML = "Update This Todo";  
+        const updateTodoNumber = document.createElement("input");
+        updateTodoNumber.setAttribute("id", "toBeUpdatedTodoNumber");
+        updateTodoNumber.setAttribute("type", "text");
+        updateTodoNumber.setAttribute("placeholder", "enter the number of the todo to be updated");
+        const updateTodoDescription = document.createElement("input");
+        updateTodoDescription.setAttribute("id", "toBeUpdatedTodoText");
+        updateTodoDescription.setAttribute("type", "text");
+        updateTodoDescription.setAttribute("placeholder", "enter the description of the todo to be updated");
+        const updateTodoStatus = document.createElement("input");
+        updateTodoStatus.setAttribute("id", "toBeUpdatedTodoStatus");
+        updateTodoStatus.setAttribute("type", "text");
+        updateTodoStatus.setAttribute("placeholder", "enter the status of the todo to be updated");
+        newUpdateTodoDiv.appendChild(updateTodoNumber);
+        newUpdateTodoDiv.appendChild(updateTodoDescription);
+        newUpdateTodoDiv.appendChild(updateTodoStatus);
+        newUpdateTodoDiv.appendChild(UpdateTodoButton);
+        document.getElementById("updateTodoDiv").appendChild(newUpdateTodoDiv)
+
+        //delete todo div
+        const newDeleteTodoDiv = document.createElement("div");
+        const deleteTodoNumber = document.createElement("input");
+        deleteTodoNumber.setAttribute("id", "deleteTodoInputBox");
+        deleteTodoNumber.setAttribute("type", "text");
+        deleteTodoNumber.setAttribute("placeholder", "Enter the number of the todo to be deleted");
+        const deleteTodoButton = document.createElement("button");
+        deleteTodoButton.setAttribute("onclick", "deleteTodo()");
+        deleteTodoButton.innerHTML = "Delete Todo"
+        newDeleteTodoDiv.appendChild(deleteTodoNumber);
+        newDeleteTodoDiv.appendChild(deleteTodoButton);
+        document.getElementById("deleteTodoDiv").appendChild(newDeleteTodoDiv);
+      } 
+
+      async function addTodoButton(){
+        const token = localStorage.getItem("token");
+        const newTodoDescription = document.getElementById("addTodoTextInputBox").value
+        const newTodoStatus = document.getElementById("addTodoStatusInputBox").value;
+
+        const response = await axios.post("http://localhost:3000/createNewTodo", 
+          {
+            description: newTodoDescription,
+            status: newTodoStatus
+          },
+          {
+            headers: {
+              token: token
+            }
+          }
+        )
+        if(response.data.error){
+          alert(JSON.stringify(response.data.error));
+        }
+        else{
+          alert(JSON.stringify(response.data.message))
+        }
+        document.getElementById("allTodosDiv").innerHTML = "";
+        showMyTodos();
+      }
+
+      async function updateTodo(){
+        const token = localStorage.getItem("token");
+        const toBeUpdatedTodoNumberInputBox = document.getElementById("toBeUpdatedTodoNumber").value;
+        const tobeUpdatedTodoDescriptionInputBox = document.getElementById("toBeUpdatedTodoText").value;
+        const tobeUpdatedTodoStatusInputBox = document.getElementById("toBeUpdatedTodoStatus").value;
+
+        const response = await axios.put(`http://localhost:3000/updateTodo/${toBeUpdatedTodoNumberInputBox}`, 
+          {
+            description: tobeUpdatedTodoDescriptionInputBox,
+            status: tobeUpdatedTodoStatusInputBox
+          },
+          {
+            headers: {
+              token: token
+            }
+          }
+        )
+        if(response.data.error){
+          alert(JSON.stringify(response.data.error));
+        }
+        else{
+          alert(JSON.stringify(response.data.message))
+        }
+        document.getElementById("allTodosDiv").innerHTML = "";
+        showMyTodos();
+      }
+
+      async function deleteTodo(){
+        const token = localStorage.getItem("token");
+        const toBeDeletedTodoNumber = document.getElementById("deleteTodoInputBox").value;
+        const response = await axios.delete(`http://localhost:3000/deleteATodo/${toBeDeletedTodoNumber}`, {
+          headers: {
+            token: token
+          }
+        })
+        if(response.data.error){
+          alert(JSON.stringify(response.data.error));
+        }
+        else{
+          alert(JSON.stringify(response.data.message));
+        }
+        document.getElementById("allTodosDiv").innerHTML = "";
+        showMyTodos();
+      }
+    </script>
+  </body>
+</html>
